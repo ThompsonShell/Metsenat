@@ -27,6 +27,10 @@ class AbstractBaseModel(models.Model):
         related_name='+',
     )
 
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     class Meta:
         abstract = True
 

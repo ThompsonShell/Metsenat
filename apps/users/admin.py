@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from apps.users.models import CustomUser
+
+
+class UserManager(admin.ModelAdmin):
+    model = CustomUser
+
+    admin.site.register(CustomUser)
