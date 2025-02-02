@@ -2,19 +2,19 @@ from django.db import models
 from django.conf import settings
 from django.db.models import IntegerChoices
 
-from apps.users import UserModel 
+from apps.users.models import UserModel
 from apps.utils.models.base_model import AbstractBaseModel
 from apps.general.validators import validate_phone_number
 
 class Status(IntegerChoices):
-    YANGI = ('yangi', 1)
-    MODERATSIYA = ('moderatsiya', 2)
-    TASDIQLANGAN = ('tasdiqlangan', 3)
-    BEKOR_QILINGAN = ('bekor qilingan', 4)
+    YANGI = (1, 'yangi')
+    MODERATSIYA = (2, 'moderatsiya')
+    TASDIQLANGAN = (3, 'tasdiqlangan')
+    BEKOR_QILINGAN = (4, 'bekor qilingan')
 
 
 
-class Appeal(models.Model, AbstractBaseModel):
+class Appeal(AbstractBaseModel):
     phone_number = models.CharField(max_length=34, help_text="please enter only 13 number", validators=[validate_phone_number])
     amount = models.DecimalField(max_digits=50, decimal_places=5, default=1)
     available = models.DecimalField(max_digits=50, decimal_places=5, default=1)

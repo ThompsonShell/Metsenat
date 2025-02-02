@@ -2,20 +2,23 @@ from django.conf import settings
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
-from apps.users import UserModel 
+from apps.users.models import UserModel
 from apps.utils.models.base_model import AbstractBaseModel
 
 
-class StudentSponsor(models.Model, AbstractBaseModel):
+class StudentSponsor(AbstractBaseModel):
     sponsor = models.ForeignKey( 
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
+        related_name='sponsor',
         limit_choices_to={'available__gt': 0,
                           'role': UserModel.Role.SPONSOR}
                           )
+
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT)
+        on_delete=models.PROTECT,
+        related_name='student',)
     amount = models.DecimalField(max_digits =10, decimal_places=5)
 
     def clean(self):

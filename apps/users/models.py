@@ -8,7 +8,6 @@ from django.utils.timezone import now
 from datetime import timedelta
 
 from apps.general.validators import validate_phone_number
-from apps.utils.models.base_model import AbstractBaseModel
 
 
 class UserManager(BaseUserManager):
@@ -18,7 +17,9 @@ class UserManager(BaseUserManager):
                 raise ValueError("The phone number is require")
             extra_fields.setdefault("is_staff", False)
             extra_fields.setdefault("is_superuser", False)
-            return self._create_user(phone_number, email, password, **extra_fields)
+            user = self.model(phone_number=phone_number, **extra_fields)
+            user.save(using=self._db)
+            return user
 
     def create_superuser(self, phone_number, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
@@ -28,42 +29,51 @@ class UserManager(BaseUserManager):
             raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
-        return self._create_user(phone_number, email, password, **extra_fields)
+        return self.create_user(phone_number, email, password, **extra_fields)
+
 
 class CustomUser(AbstractUser):
     class Role(IntegerChoices):
-        ADMIN = ("admin", 1)
-        STUDENT = ("student", 2)
-        SPONSOR = ("sponsor", 3)
+        ADMIN = (1, "admin")
+        STUDENT = (2, "student")
+        SPONSOR = (3, "sponsor")
 
     class UserType(IntegerChoices):
-        JISMONIY = 1
-        YURIDIK = 2
+        PERSONAL = 1
+        LEGAL = 2
+        EMPTY = 3
 
-    class StudentTDegree(IntegerChoices):
-        BAKALAVR = 1
-        MAGISTIR = 2
+
+    class StudentDegree(IntegerChoices):
+        BACHELOR = 1
+        MASTERS = 2
+        EMPTY = 3
+
 
     username = None
     photo = models.ImageField(upload_to="users/Y%/m%/%d", blank=True, null=True)
-    degree = models.CharField(choices=StudentTDegree, default=1, null=True)
-    role = models.CharField(choices=Role, default=3)
-    user_type = models.CharField(choices=UserType, default=1)
-    balance = models.DecimalField(max_digits=50, decimal_places=5, validators=[MinValueValidator(1)])
-    available = models.DecimalField(max_digits=50, decimal_places=5, validators=[MinValueValidator(1)])
+    degree = models.IntegerField(choices=StudentDegree, default=3)
+    role = models.IntegerField(choices=Role, default=3)
+    user_type = models.IntegerField(choices=UserType, default=3)
+    balance = models.DecimalField(max_digits=50, decimal_places=5, default=1, validators=[MinValueValidator(1)])
+    available = models.DecimalField(max_digits=50, decimal_places=5, default=1, validators=[MinValueValidator(1)])
     last_updated = models.DateTimeField(auto_now=True)
-    university = models.ForeignKey('general.University', models.CASCADE)
-    phone_number = models.CharField(max_length=13,  help_text="please enter only 13 number", validators=[validate_phone_number])
+    university = models.ForeignKey('general.University', on_delete=models.SET_NULL, null=True)
+    phone_number = models.CharField(max_length=13,  help_text="please enter only 13 number", validators=[validate_phone_number], unique=True)
 
     objects = UserManager()
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
+    def save(self, *args, **kwargs):
+        if self.role == self.Role.STUDENT and not self.balance:
+            self.balance = self.university.contract_amount
+            return super().save(*args, **kwargs)
 
     def clean(self):
         if self.role == self.Role.STUDENT and not self.university:
                 raise ValidationError({"university": "this field must not be blank"})
-        
+
         if self.role == self.Role.STUDENT:
             if self.last_updated and now() - self.last_updated > timedelta(days=2) and self.available :
                 raise ValidationError({"available": "The sponsor's balance must not remain 0 for more than 2 days."})
