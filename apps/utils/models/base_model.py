@@ -18,6 +18,7 @@ class AbstractBaseModel(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='+',
+        editable=False,
     )
 
     updated_by = models.ForeignKey(
@@ -25,10 +26,11 @@ class AbstractBaseModel(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='+',
+        editable=False,
     )
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.full_clean()
         super().save(*args, **kwargs)
 
     class Meta:

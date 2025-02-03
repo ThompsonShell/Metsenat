@@ -11,9 +11,7 @@ class StudentSponsor(AbstractBaseModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name='sponsor',
-        limit_choices_to={'available__gt': 0,
-                          'role': UserModel.Role.SPONSOR}
-                          )
+        limit_choices_to={'role': UserModel.Role.SPONSOR})
 
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -22,6 +20,7 @@ class StudentSponsor(AbstractBaseModel):
     amount = models.DecimalField(max_digits =10, decimal_places=5)
 
     def clean(self):
+
         if self.amount > self.sponsor.available:
             raise ValidationError({'amount': "amount must be greater than sponsor available"})
         if self.amount > self.student.university.contract_amount - self.student.balance:

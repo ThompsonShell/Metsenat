@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from .models import University
+from .models import University, PaymentMethod
 
 
-# USED by ModelSerializer
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = University
         fields = "__all__"
 
 
-# USED by Serializer
-# class UniversitySerializer(serializers.Serializer):
-#     def create(self, validate_data):
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        fields = "__all__"

@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from rest_framework.exceptions import ValidationError
 
 from apps.utils.models.base_model import AbstractBaseModel
 
@@ -12,9 +13,15 @@ class University(AbstractBaseModel):
     def __str__(self):
         return self.name
 
+    def clean(self, *args, **kwargs):
+        old_contract = University.objects.get(pk=self.pk)
+        if self.contract_amount != old_contract.contract_amount:
+            raise ValidationError("You can't change the amount of your contract.")
+
+
 class PaymentMethod(AbstractBaseModel):
     name = models.CharField(max_length=250)
-    slug = models.SlugField(max_length=250, unique=True)
+    slug = models.SlugField(max_length=250, unique=True, editable=False)
 
     def __str__(self):
         return self.name

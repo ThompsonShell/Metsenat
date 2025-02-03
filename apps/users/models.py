@@ -1,7 +1,9 @@
+from tabnanny import check
+
 from django.db import models
 from django.db.models import IntegerChoices
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.base_user import BaseUserManager
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
@@ -60,23 +62,28 @@ class CustomUser(AbstractUser):
     last_updated = models.DateTimeField(auto_now=True)
     university = models.ForeignKey('general.University', on_delete=models.SET_NULL, null=True)
     phone_number = models.CharField(max_length=13,  help_text="please enter only 13 number", validators=[validate_phone_number], unique=True)
+    date_joined = models.DateTimeField(default=now)
 
     objects = UserManager()
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def save(self, *args, **kwargs):
-        if self.role == self.Role.STUDENT and not self.balance:
+        if self.role == self.Role.STUDENT and self.balance is None:
             self.balance = self.university.contract_amount
             return super().save(*args, **kwargs)
 
     def clean(self):
+        if self.role == self.Role.STUDENT and self.degree not in [self.StudentDegree.BACHELOR, self.StudentDegree.MASTERS]:
+            raise ValidationError({"degree": "Student must be 1 {BACHELOR} or 2 {MASTERS}"})
+
         if self.role == self.Role.STUDENT and not self.university:
                 raise ValidationError({"university": "this field must not be blank"})
 
         if self.role == self.Role.STUDENT:
             if self.last_updated and now() - self.last_updated > timedelta(days=2) and self.available :
                 raise ValidationError({"available": "The sponsor's balance must not remain 0 for more than 2 days."})
+
 
 UserModel = CustomUser
 
