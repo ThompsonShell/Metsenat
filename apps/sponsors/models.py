@@ -20,7 +20,6 @@ class StudentSponsor(AbstractBaseModel):
     amount = models.DecimalField(max_digits =10, decimal_places=5)
 
     def clean(self):
-
         if self.amount > self.sponsor.available:
             raise ValidationError({'amount': "amount must be greater than sponsor available"})
         if self.amount > self.student.university.contract_amount - self.student.balance:
