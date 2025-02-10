@@ -6,7 +6,7 @@ from apps.users.models import UserModel
 from apps.users.serializers import UserListSerializer
 
 class UserListAPIView(ListAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = UserModel.objects.all().order_by('-pk')
     serializer_class = UserListSerializer
 

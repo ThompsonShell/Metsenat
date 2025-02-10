@@ -23,7 +23,7 @@ class StudentSponsor(AbstractBaseModel):
         if self.amount > self.sponsor.available:
             raise ValidationError({'amount': "amount must be greater than sponsor available"})
         if self.amount > self.student.university.contract_amount - self.student.balance:
-            raise ValidationError({'amount':"amount must be greater than student contrat amount"})
+            raise ValidationError({'amount':"amount must be greater than student contract amount"})
         
 
 

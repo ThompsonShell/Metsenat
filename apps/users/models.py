@@ -1,5 +1,3 @@
-from tabnanny import check
-
 from django.db import models
 from django.db.models import IntegerChoices
 from django.contrib.auth.models import AbstractUser
@@ -20,6 +18,8 @@ class UserManager(BaseUserManager):
             extra_fields.setdefault("is_staff", False)
             extra_fields.setdefault("is_superuser", False)
             user = self.model(phone_number=phone_number, **extra_fields)
+            if password:
+                user.set_password(password)
             user.save(using=self._db)
             return user
 
@@ -31,8 +31,12 @@ class UserManager(BaseUserManager):
             raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
-        return self.create_user(phone_number, email, password, **extra_fields)
 
+        user = self.create_user(phone_number, email, password, **extra_fields)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
 
 class CustomUser(AbstractUser):
     class Role(IntegerChoices):
@@ -53,7 +57,7 @@ class CustomUser(AbstractUser):
 
 
     username = None
-    photo = models.ImageField(upload_to="users/Y%/m%/%d", blank=True, null=True)
+    photo = models.ImageField(upload_to="users/%Y/%m/%d", blank=True, null=True)
     degree = models.IntegerField(choices=StudentDegree, default=3)
     role = models.IntegerField(choices=Role, default=3)
     user_type = models.IntegerField(choices=UserType, default=3)
@@ -71,7 +75,7 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if self.role == self.Role.STUDENT and self.balance is None:
             self.balance = self.university.contract_amount
-            return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def clean(self):
         if self.role == self.Role.STUDENT and self.degree not in [self.StudentDegree.BACHELOR, self.StudentDegree.MASTERS]:
@@ -81,7 +85,8 @@ class CustomUser(AbstractUser):
                 raise ValidationError({"university": "this field must not be blank"})
 
         if self.role == self.Role.STUDENT:
-            if self.last_updated and now() - self.last_updated > timedelta(days=2) and self.available :
+            if self.last_updated and now() - self.last_updated > timedelta(days=2) and (
+                    self.available is not None and self.available > 0):
                 raise ValidationError({"available": "The sponsor's balance must not remain 0 for more than 2 days."})
 
 

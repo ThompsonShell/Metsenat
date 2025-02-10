@@ -12,12 +12,16 @@ MY_PROJECT_APPS = [
     'apps.users',
     'apps.sponsors',
     'apps.general',
-    'apps.utils'
+    'apps.utils',
+    'apps.authentication'
+
 ]
 
 THIRD_PARTY_APPS = [
     'rest_framework',
-    'django_filters'
+    'django_filters',
+    'rest_framework.authtoken',
+
 ]
 
 INSTALLED_APPS = DJANGO_APPS + MY_PROJECT_APPS +THIRD_PARTY_APPS
