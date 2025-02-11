@@ -2,32 +2,55 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.authentication.serializers import UserRegisterSerializer
+from .serializers import SendAuthCodeSerializer, AuthCodeConfirmSerializer
+#
+# class UserRegisterAPIView(APIView):
+#     def post(self, request, *args, **kwargs):
+#         serializer = UserRegisterSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
 
-class UserRegisterAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = UserRegisterSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+class SendAuthCodeAPIView(CreateAPIView):
+    """
+    API view to handle sending authentication codes to users.
+
+    This view inherits from CreateApiView and is responsible for generating
+    and sending authentication codes to users via their registered contact
+    methods (e.g.SMS).
+
+    Methods:
+        post(request, *args, **kwargs):
+            Handles the HTTP POST request to send the authentication code.
+            Validates the request data and sends the code to the user.
+
+    Attributes:
+        serializer_class (Serializer):
+            The serializer class used to validate and deserialize input data.
+        permission_classes (tuple):
+            The tuple of permission classes that determine access control.
+    """
+    serializer_class = SendAuthCodeSerializer
+    authentication_classes = []
 
 
 class LoginAPIView(APIView):
     def post(self, request):
-        username, password = request.data.get('username'), request.data.get('password')
-        if username and password:
-            user = authenticate(request=request, username=username, password=password)
+        phone_number, password = request.data.get('phone_number'), request.data.get('password')
+        if phone_number and password:
+            user = authenticate(request=request, phone_number=phone_number, password=password)
             if user is None:
-                print(username, password, '>>>>>>>>>>>>>>>>>>>')
-                raise ValidationError('invalid username or password')
+                print(phone_number, password, '>>>>>>>>>>>>>>>>>>>')
+                raise ValidationError('invalid phone_number or password')
 
             token_obj, _ = Token.objects.get_or_create(user_id=user.pk)
         else:
-            raise ValidationError('Username or password is required')
+            raise ValidationError('phone_number or password is required')
         return Response({"token": token_obj.key})
 
 class LogoutAPIView(APIView):
@@ -41,4 +64,31 @@ class LogoutAPIView(APIView):
 #     serializer_class = UserSerializer
 #
 #     def get_object(self):
-#         return self.request.user
+#         return self.request.user''
+
+
+
+class AuthCodeConfirmAPIView(CreateAPIView):
+    """
+    API view to handle confirming authentication codes.
+
+    This view inherits from CreateApiView and is responsible for confirming
+    authentication codes sent to users via their registered contact methods
+    (e.g. SMS).
+
+    Methods:
+        post(request, *args, **kwargs):
+            Handles the HTTP POST request to confirm the authentication code.
+            Validates the request data and confirms the code.
+
+    Attributes:
+        serializer_class (Serializer):
+            The serializer class used to validate and deserialize input data.
+        permission_classes (tuple):
+            The tuple of permission classes that determine access control.
+    """
+    serializer_class = AuthCodeConfirmSerializer
+    authentication_classes = []
+
+    def perform_create(self, serializer):
+        pass

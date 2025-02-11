@@ -10,13 +10,13 @@ class StudentSponsor(AbstractBaseModel):
     sponsor = models.ForeignKey( 
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name='sponsor',
+        related_name='sponsor_set',
         limit_choices_to={'role': UserModel.Role.SPONSOR})
 
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name='student',)
+        related_name='student_set',)
     amount = models.DecimalField(max_digits =10, decimal_places=5)
 
     def clean(self):
