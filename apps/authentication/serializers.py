@@ -1,10 +1,13 @@
 import random
 from django.core.cache import cache
+from django.template.context_processors import request
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.general.validators import validate_phone_number
+from apps.users.models import UserModel
 
 
 # from apps.users.models import UserModel
@@ -56,6 +59,9 @@ class SendAuthCodeSerializer(serializers.Serializer):
 
 
 class AuthCodeConfirmSerializer(serializers.Serializer):
+    pass
+
+class LoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField(
         max_length=13,
         min_length=13,
@@ -63,7 +69,9 @@ class AuthCodeConfirmSerializer(serializers.Serializer):
         allow_null=False,
         validators=[validate_phone_number],
         trim_whitespace=True,
-        help_text="please enter only 13 number"
+        help_text="please enter only 13 number",
+        write_only=True
+
     )
     auth_code = serializers.CharField(
         max_length=4,
@@ -74,16 +82,26 @@ class AuthCodeConfirmSerializer(serializers.Serializer):
         help_text="please enter only 4 number"
     )
 
-    def validate(self, data):
-        phone_number = data.get('phone_number')
-        auth_code = data.get('auth_code')
+    def validate(self, attrs):
+        phone_number = attrs.get('phone_number')
+        auth_code = attrs.get('auth_code')
 
-        if not phone_number:
-            raise ValidationError('Phone number required')
-        if not auth_code:
-            raise ValidationError('Auth code required')
+
+        if any([phone_number, auth_code]):
+            raise ValidationError('Phone number or auth code are required')
 
         if cache.get(phone_number) != auth_code:
             raise ValidationError('Invalid auth code')
 
-        return data
+        user, created = UserModel.objects.get_or_create(
+            phone_number=phone_number,
+            defaults={'role': UserModel.Role.SPONSOR}
+        )
+        refresh = RefreshToken.for_user(user)
+        attrs['refresh_token'] = str(refresh)
+        attrs['access_token'] = str(refresh.access_token)
+        request.session['refresh_token'] = str(refresh)
+
+        cache.delete(phone_number)
+
+        return attrs

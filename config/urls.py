@@ -20,13 +20,26 @@ from django.urls import path, include
 from config.settings.drf_yasg import schema_view
 
 urlpatterns = [
+    #Swagger
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    #Swagger
+
+    #Django Admin urls
     path('api/v1/admin/', admin.site.urls),
+    #Django Admin urls
+
+    #Django apps urls
     path('api/v1/users/', include('apps.users.urls')),
     path('api/v1/appeals/', include('apps.appeals.urls')),
     path('api/v1/sponsors/', include('apps.sponsors.urls')),
     path('api/v1/general/', include('apps.general.urls')),
     path('api/v1/authentication/', include('apps.authentication.urls'))
+    # Django apps urls
+
 ]
+
+
+
+

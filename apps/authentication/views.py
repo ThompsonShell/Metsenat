@@ -6,7 +6,15 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import SendAuthCodeSerializer, AuthCodeConfirmSerializer
+from .serializers import SendAuthCodeSerializer, AuthCodeConfirmSerializer, LoginSerializer
+
+
+
+class UserLoginAPIView(CreateAPIView):
+    serializer_class = LoginSerializer
+
+    def perform_create(self, serializer):
+        pass
 #
 # class UserRegisterAPIView(APIView):
 #     def post(self, request, *args, **kwargs):
@@ -14,7 +22,6 @@ from .serializers import SendAuthCodeSerializer, AuthCodeConfirmSerializer
 #         serializer.is_valid(raise_exception=True)
 #         serializer.save()
 #         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
-
 
 class SendAuthCodeAPIView(CreateAPIView):
     """
@@ -41,12 +48,12 @@ class SendAuthCodeAPIView(CreateAPIView):
 
 class LoginAPIView(APIView):
     def post(self, request):
-        phone_number, password = request.data.get('phone_number'), request.data.get('password')
-        if phone_number and password:
-            user = authenticate(request=request, phone_number=phone_number, password=password)
+        phone_number, auth_code = request.data.get('phone_number'), request.data.get('auth_code')
+        if phone_number and auth_code:
+            user = authenticate(request=request, phone_number=phone_number, auth_code=auth_code)
             if user is None:
-                print(phone_number, password, '>>>>>>>>>>>>>>>>>>>')
-                raise ValidationError('invalid phone_number or password')
+                print(phone_number, auth_code, '>>>>>>>>>>>>>>>>>>>')
+                raise ValidationError('invalid phone_number or auth_code')
 
             token_obj, _ = Token.objects.get_or_create(user_id=user.pk)
         else:

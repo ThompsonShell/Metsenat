@@ -5,4 +5,5 @@ from .validators import *
 from .middleware import *
 from .installed_apps import *
 from .rest_framework import *
-from .rest_framewrok_simplejwt import *
+from .rest_framework_simplejwt import *
+
