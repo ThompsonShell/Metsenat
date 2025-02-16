@@ -1,18 +1,14 @@
-# {
-# "username": "+998903287481",
-# "password": "12"
-# }
-#
-{
-    "username": "+998903287481",
-    "password": "12"
-}
+import requests
 
-{
-"username": "+99890533765",
-"password": "1"
-}
-{
-    "phone_number": "+998903287481",
-    "password": "12"
-}
+class EskizUz:
+    def get_token(self):
+        url = "https://notify.eskiz.uz/api/auth/login"
+
+        data = {
+            "email": "<EMAIL>",
+            "password": "<PASSWORD>"
+        }
+
+        res = requests.post(url, json=data)
+        print(res.status_code, res.json())
+

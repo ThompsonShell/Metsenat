@@ -13,7 +13,6 @@ class UniversityListCreateView(ListCreateAPIView):
     # filterset_fields = []
 
 
-
 class UniversityUpdateView(UpdateAPIView):
     serializer_class = UniversitySerializer
     permission_classes = [IsAdminUser]
@@ -22,6 +21,7 @@ class UniversityUpdateView(UpdateAPIView):
         university_id = self.kwargs['id']
         return University.objects.filter(id=university_id)
 
+
 class UniversityRetrieveView(RetrieveAPIView):
     serializer_class = UniversitySerializer
     lookup_field = 'id'
@@ -29,6 +29,7 @@ class UniversityRetrieveView(RetrieveAPIView):
     def get_queryset(self):
         university_id = self.kwargs['id']
         return University.objects.filter(id=university_id)
+
 
 class UniversityDeleteView(DestroyAPIView):
     serializer_class = UniversitySerializer
@@ -52,4 +53,3 @@ class PaymentMethodRetrieveView(RetrieveAPIView):
     def get_queryset(self):
         payment_method_id = self.kwargs['id']
         return PaymentMethod.objects.filter(id=payment_method_id)
-
