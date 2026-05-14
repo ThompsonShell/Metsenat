@@ -5,7 +5,7 @@
 1. Clone repository
 
 ```bash
-git@github.com:ThompsonShell/Metsenat.git
+git clone git@github.com:ThompsonShell/Metsenat.git
 cd Metsenat
 ```
 

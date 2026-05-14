@@ -23,7 +23,7 @@ type FormMessage = { type: "success" | "error"; text: string } | null;
 type NumericLike = string | number | null | undefined;
 const APPEAL_STATUS_MODERATION = 2; // matches backend Appeal.Status.MODERATION
 
-function toFiniteNumber(value: NumericLike): number {
+function safeParseNumber(value: NumericLike): number {
   const parsed = typeof value === "number" ? value : Number.parseFloat(String(value));
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -67,9 +67,9 @@ export default function Home() {
   const [message, setMessage] = useState<FormMessage>(null);
 
   const dashboard = useMemo(() => {
-    const appealsAmount = appeals.reduce((total, item) => total + toFiniteNumber(item.amount), 0);
+    const appealsAmount = appeals.reduce((total, item) => total + safeParseNumber(item.amount), 0);
     const sponsorshipAmount = studentSponsors.reduce(
-      (total, item) => total + toFiniteNumber(item.amount),
+      (total, item) => total + safeParseNumber(item.amount),
       0,
     );
 
