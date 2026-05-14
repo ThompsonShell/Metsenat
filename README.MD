@@ -1,60 +1,63 @@
-Metsenat
+# Metsenat
 
-Installation
+## Backend service setup (Django)
 
-To set up the project locally, follow these steps:
+1. Clone repository
 
-1. Clone the repository
-
-   ```bash
-   git@github.com:ThompsonShell/Metsenat.git
-   cd Metsenat
-   ```
-
+```bash
+git@github.com:ThompsonShell/Metsenat.git
+cd Metsenat
+```
 
 2. Create a virtual environment
 
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate # For Windows, use `venv\Scripts\activate`
-   ```
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
 3. Install required packages
 
-   ```bash
-   pip install -r requirements.txt
-   ```   
+```bash
+pip install -r requirements.txt
+```
 
-4. Configure Environment Variables
-Rename the .env.example file to .env and replace your_secret_key with your actual Django secret key, along with any other necessary environment-specific values:
+4. Configure backend environment
 
-   ```bash
-   SECRET_KEY=your_secret_key
-   ```
+Rename `.env.example` to `.env` and set your values.
 
 5. Apply migrations
 
-   ```bash
-   python manage.py migrate
-   ```
+```bash
+python manage.py migrate
+```
 
-6. Create a superuser
+6. Run backend service
 
-   ```bash
-   python manage.py createsuperuser
-   ```
+```bash
+python manage.py runserver
+```
 
-7. Run the project
+Backend API URL: `http://localhost:8000/api/v1`
 
-   ```bash
-   python manage.py runserver
-   ```
-   
-Usage
+---
 
-After starting the project, you can access the following URLs:
+## Frontend service setup (Next.js)
 
-    http://localhost:8000/ - Home page
-    http://localhost:8000/admin/ - Admin panel
+```bash
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev
+```
 
-"It is not good to move.!!!"
+Frontend URL: `http://localhost:3000`
+
+---
+
+## Service split
+
+- Backend service: Django API (this repository root)
+- Frontend service: Next.js app (`/frontend`)
+
+To publish as fully separate repositories, move `/frontend` into a dedicated Git repository and deploy independently.
