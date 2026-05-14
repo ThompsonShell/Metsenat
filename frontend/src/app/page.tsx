@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import {
   ApiError,
   createAppeal,
@@ -34,7 +34,12 @@ function parseError(error: unknown): string {
 }
 
 export default function Home() {
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+    return window.localStorage.getItem(TOKEN_STORAGE_KEY) ?? "";
+  });
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
@@ -76,8 +81,7 @@ export default function Home() {
     };
   }, [appeals, paymentMethods.length, studentSponsors, universities.length, users.length]);
 
-  async function reloadData(currentToken?: string) {
-    const activeToken = currentToken ?? token;
+  const reloadData = useCallback(async (activeToken: string = "") => {
     setLoading(true);
     setMessage(null);
 
@@ -108,17 +112,6 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    const savedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (savedToken) {
-      setToken(savedToken);
-      reloadData(savedToken).catch(() => undefined);
-      return;
-    }
-
-    reloadData().catch(() => undefined);
   }, []);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -164,7 +157,7 @@ export default function Home() {
       );
       setNewUniversityName("");
       setNewUniversityAmount("");
-      await reloadData();
+      await reloadData(token);
     } catch (error) {
       setMessage({ type: "error", text: parseError(error) });
     } finally {
@@ -179,7 +172,7 @@ export default function Home() {
       setLoading(true);
       await createPaymentMethod({ name: newPaymentMethodName }, token || undefined);
       setNewPaymentMethodName("");
-      await reloadData();
+      await reloadData(token);
     } catch (error) {
       setMessage({ type: "error", text: parseError(error) });
     } finally {
@@ -206,7 +199,7 @@ export default function Home() {
       setAppealPhone("");
       setAppealAmount("");
       setAppealAvailable("");
-      await reloadData();
+      await reloadData(token);
     } catch (error) {
       setMessage({ type: "error", text: parseError(error) });
     } finally {
@@ -230,7 +223,7 @@ export default function Home() {
       setSponsorId("");
       setStudentId("");
       setSponsorAmount("");
-      await reloadData();
+      await reloadData(token);
     } catch (error) {
       setMessage({ type: "error", text: parseError(error) });
     } finally {
@@ -275,7 +268,7 @@ export default function Home() {
             <button type="button" onClick={handleSendCode} disabled={loading || !phoneNumber}>
               Send Verification Code
             </button>
-            <button type="button" onClick={() => reloadData()} disabled={loading}>
+            <button type="button" onClick={() => reloadData(token)} disabled={loading}>
               Reload API Data
             </button>
             <button type="button" onClick={logout} disabled={loading || !token}>

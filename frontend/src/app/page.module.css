@@ -40,7 +40,7 @@
   gap: 0.5rem;
 }
 
-button {
+.section button {
   padding: 0.55rem 0.9rem;
   border: none;
   border-radius: 8px;
@@ -49,7 +49,7 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+.section button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
