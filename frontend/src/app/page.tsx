@@ -19,9 +19,8 @@ import {
 import type { Appeal, PaymentMethod, StudentSponsor, University, User } from "@/types/api";
 import styles from "./page.module.css";
 
-const TOKEN_STORAGE_KEY = "metsenat_access_token";
-
 type FormMessage = { type: "success" | "error"; text: string } | null;
+const APPEAL_STATUS_MODERATION = 2;
 
 function parseError(error: unknown): string {
   if (error instanceof ApiError) {
@@ -34,12 +33,7 @@ function parseError(error: unknown): string {
 }
 
 export default function Home() {
-  const [token, setToken] = useState(() => {
-    if (typeof window === "undefined") {
-      return "";
-    }
-    return window.localStorage.getItem(TOKEN_STORAGE_KEY) ?? "";
-  });
+  const [token, setToken] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
@@ -122,9 +116,8 @@ export default function Home() {
     try {
       const result = await loginWithPassword(phoneNumber, password);
       setToken(result.access);
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, result.access);
       await reloadData(result.access);
-      setMessage({ type: "success", text: "Login successful, token saved locally." });
+      setMessage({ type: "success", text: "Login successful." });
     } catch (error) {
       setMessage({ type: "error", text: parseError(error) });
     } finally {
@@ -190,7 +183,7 @@ export default function Home() {
           phone_number: appealPhone,
           amount: appealAmount,
           available: appealAvailable,
-          status: 2,
+          status: APPEAL_STATUS_MODERATION,
           sponsor: Number(appealSponsorId),
           payment_method: Number(appealPaymentMethodId),
         },
@@ -234,8 +227,7 @@ export default function Home() {
   function logout() {
     setToken("");
     setUsers([]);
-    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-    setMessage({ type: "success", text: "Token removed from local storage." });
+    setMessage({ type: "success", text: "Logged out." });
   }
 
   return (
