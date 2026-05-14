@@ -20,7 +20,13 @@ import type { Appeal, PaymentMethod, StudentSponsor, University, User } from "@/
 import styles from "./page.module.css";
 
 type FormMessage = { type: "success" | "error"; text: string } | null;
-const APPEAL_STATUS_MODERATION = 2;
+type NumericLike = string | number | null | undefined;
+const APPEAL_STATUS_MODERATION = 2; // matches backend Appeal.Status.MODERATION
+
+function toFiniteNumber(value: NumericLike): number {
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
 function parseError(error: unknown): string {
   if (error instanceof ApiError) {
@@ -61,8 +67,11 @@ export default function Home() {
   const [message, setMessage] = useState<FormMessage>(null);
 
   const dashboard = useMemo(() => {
-    const appealsAmount = appeals.reduce((total, item) => total + Number(item.amount), 0);
-    const sponsorshipAmount = studentSponsors.reduce((total, item) => total + Number(item.amount), 0);
+    const appealsAmount = appeals.reduce((total, item) => total + toFiniteNumber(item.amount), 0);
+    const sponsorshipAmount = studentSponsors.reduce(
+      (total, item) => total + toFiniteNumber(item.amount),
+      0,
+    );
 
     return {
       users: users.length,
